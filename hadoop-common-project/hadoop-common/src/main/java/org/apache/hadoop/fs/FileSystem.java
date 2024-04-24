@@ -1073,6 +1073,7 @@ public abstract class FileSystem extends Configured
    * @return output stream.
    */
   public FSDataOutputStream create(Path f) throws IOException {
+    // 默认overwrite: true
     return create(f, true);
   }
 
@@ -1086,6 +1087,9 @@ public abstract class FileSystem extends Configured
    */
   public FSDataOutputStream create(Path f, boolean overwrite)
       throws IOException {
+    // 1.根据默认配置文件获取io.file.buffer.size=4096，该配置是用于读写操作时buffer区的大小
+    // 2.获取默认副本数
+    // 3.获取默认block size=128M
     return create(f, overwrite,
                   getConf().getInt(IO_FILE_BUFFER_SIZE_KEY,
                       IO_FILE_BUFFER_SIZE_DEFAULT),
@@ -1205,6 +1209,7 @@ public abstract class FileSystem extends Configured
       int bufferSize,
       short replication,
       long blockSize) throws IOException {
+    // 添加Progressable=null
     return create(f, overwrite, bufferSize, replication, blockSize, null);
   }
 
@@ -1228,6 +1233,9 @@ public abstract class FileSystem extends Configured
                                             long blockSize,
                                             Progressable progress
                                             ) throws IOException {
+    // 获取相关权限
+    // 此处会根据传入的path创建具体的FileSystem类
+    // hdfs://   对应的是DistributedFileSystem
     return this.create(f, FsCreateModes.applyUMask(
         FsPermission.getFileDefault(), FsPermission.getUMask(getConf())),
         overwrite, bufferSize, replication, blockSize, progress);
