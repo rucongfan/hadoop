@@ -338,6 +338,7 @@ public class DistributedFileSystem extends FileSystem
     return new FileSystemLinkResolver<FSDataInputStream>() {
       @Override
       public FSDataInputStream doCall(final Path p) throws IOException {
+        DFSClient.LOG.info("DistributedFileSyste doCall will working");
         final DFSInputStream dfsis =
             dfs.open(getPathName(p), bufferSize, verifyChecksum);
         try {

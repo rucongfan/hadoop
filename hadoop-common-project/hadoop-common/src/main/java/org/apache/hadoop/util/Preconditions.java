@@ -250,6 +250,7 @@ public final class Preconditions {
    * @throws IllegalStateException if {@code expression} is false
    */
   public static void checkState(final boolean expression) {
+    LOG.info("Preconditions checkState working, expression: {}", expression);
     if (!expression) {
       throw new IllegalStateException();
     }

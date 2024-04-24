@@ -791,6 +791,7 @@ public class NameNodeRpcServer implements NamenodeProtocols {
       throws IOException {
     checkNNStartup();
     metrics.incrGetBlockLocations();
+    LOG.debug("nameNodeRpcServer receive request, then will call namesystem.getBlockLocations...");
     LocatedBlocks locatedBlocks =
         namesystem.getBlockLocations(getClientMachine(), src, offset, length);
     return locatedBlocks;

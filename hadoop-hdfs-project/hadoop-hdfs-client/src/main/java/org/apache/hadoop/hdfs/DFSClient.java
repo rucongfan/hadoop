@@ -928,7 +928,11 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
       String src, long start, long length)
       throws IOException {
     try {
-      return namenode.getBlockLocations(src, start, length);
+      LOG.debug("callGetBlockLocations working then will call node.getBlockLocations");
+      LocatedBlocks blockLocations = namenode.getBlockLocations(src, start, length);
+      LOG.debug("callGetBlockLocations is done");
+      return blockLocations;
+
     } catch(RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,
           FileNotFoundException.class,
@@ -1074,6 +1078,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     //    Get block info from namenode
     try (TraceScope ignored = newPathTraceScope("newDFSInputStream", src)) {
       LocatedBlocks locatedBlocks = getLocatedBlocks(src, 0);
+      LOG.debug("DFSClient getLocatedBlocks complete");
       return openInternal(locatedBlocks, src, verifyChecksum);
     }
   }
