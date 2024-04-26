@@ -31,18 +31,10 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.crypto.CryptoProtocolVersion;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.BatchedRemoteIterator.BatchedEntries;
 import org.apache.hadoop.fs.BatchedRemoteIterator.BatchedListEntries;
-import org.apache.hadoop.fs.CacheFlag;
-import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.fs.CreateFlag;
-import org.apache.hadoop.fs.FsServerDefaults;
 import org.apache.hadoop.fs.Options.Rename;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.QuotaUsage;
-import org.apache.hadoop.fs.StorageType;
-import org.apache.hadoop.fs.XAttr;
-import org.apache.hadoop.fs.XAttrSetFlag;
 import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
@@ -259,6 +251,8 @@ import org.apache.hadoop.thirdparty.protobuf.ServiceException;
 
 import org.apache.hadoop.util.Lists;
 import org.apache.hadoop.util.concurrent.AsyncGet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.ipc.internal.ShadedProtobufHelper.getRemoteException;
 import static org.apache.hadoop.ipc.internal.ShadedProtobufHelper.ipc;
@@ -272,6 +266,8 @@ import static org.apache.hadoop.ipc.internal.ShadedProtobufHelper.ipc;
 @InterfaceStability.Stable
 public class ClientNamenodeProtocolTranslatorPB implements
     ProtocolMetaInterface, ClientProtocol, Closeable, ProtocolTranslator {
+  public static final Logger LOG = LoggerFactory.getLogger(ClientNamenodeProtocolTranslatorPB.class);
+
   final private ClientNamenodeProtocolPB rpcProxy;
 
   static final GetServerDefaultsRequestProto VOID_GET_SERVER_DEFAULT_REQUEST =
@@ -337,6 +333,7 @@ public class ClientNamenodeProtocolTranslatorPB implements
         .setOffset(offset)
         .setLength(length)
         .build();
+    LOG.debug("经过retryProxy动态代理方法后执行主题rpc方法");
     GetBlockLocationsResponseProto resp = ipc(() -> rpcProxy.getBlockLocations(null,
         req));
     return resp.hasLocations() ?

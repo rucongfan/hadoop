@@ -97,11 +97,15 @@ public class RetryInvocationHandler<T> implements RpcInvocationHandler {
         // failed method invocations from triggering multiple failover attempts.
         final long failoverCount = retryInvocationHandler.getFailoverCount();
         try {
+          //
+          LOG.debug("invokeOnce实际执行invoke方法");
           return invoke();
         } catch (Exception e) {
+          // 如果开启trace则打印对应的日志
           if (LOG.isTraceEnabled()) {
             LOG.trace(toString(), e);
           }
+          // 如果当前线程被中断则不再进行重试
           if (Thread.currentThread().isInterrupted()) {
             // If interrupted, do not retry.
             throw e;
@@ -164,6 +168,7 @@ public class RetryInvocationHandler<T> implements RpcInvocationHandler {
 
     Object invokeMethod() throws Throwable {
       if (isRpc && SET_CALL_ID_FOR_TEST.get()) {
+        LOG.debug("RetryInvocationHandler invokeMethod, isRpc:{}, SET_CALL_ID_FOR_TEST:{}", isRpc, SET_CALL_ID_FOR_TEST);
         Client.setCallIdAndRetryCount(callId, counters.retries,
             retryInvocationHandler.asyncCallHandler);
       }
@@ -348,6 +353,7 @@ public class RetryInvocationHandler<T> implements RpcInvocationHandler {
 
   private Call newCall(Method method, Object[] args, boolean isRpc,
                        int callId) {
+    // 是否为异步请求
     if (Client.isAsynchronousMode()) {
       return asyncCallHandler.newAsyncCall(method, args, isRpc, callId, this);
     } else {
@@ -358,11 +364,15 @@ public class RetryInvocationHandler<T> implements RpcInvocationHandler {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args)
       throws Throwable {
+    LOG.debug("通过动态代理执行到RetryInvocationHandler, method:{}", method);
     final boolean isRpc = isRpcInvocation(proxyDescriptor.getProxy());
+    // 判断如果是rpc调用则生成一个先生成一个client id
     final int callId = isRpc? Client.nextCallId(): RpcConstants.INVALID_CALL_ID;
-
+    // 构造一个新的call请求
     final Call call = newCall(method, args, isRpc, callId);
     while (true) {
+      // 调用一次请求，请求结果CallReturn包含请求状态state
+      LOG.debug("通过动态代理发送一次请求，call.invokeOnce");
       final CallReturn c = call.invokeOnce();
       final CallReturn.State state = c.getState();
       if (state == CallReturn.State.ASYNC_INVOKED) {
@@ -434,6 +444,7 @@ public class RetryInvocationHandler<T> implements RpcInvocationHandler {
       if (!method.isAccessible()) {
         method.setAccessible(true);
       }
+      LOG.debug("执行被代理方法的实际逻辑,proxy:{}", proxyDescriptor.getProxy());
       final Object r = method.invoke(proxyDescriptor.getProxy(), args);
       hasSuccessfulCall = true;
       return r;

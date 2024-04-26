@@ -367,6 +367,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     } else {
       Preconditions.checkArgument(nameNodeUri != null,
           "null URI");
+      LOG.debug("createProxyWithClientProtocol通过动态代理创建ClientProtocol的代理");
       proxyInfo = NameNodeProxiesClient.createProxyWithClientProtocol(conf,
           nameNodeUri, nnFallbackToSimpleAuth);
       this.dtService = proxyInfo.getDelegationTokenService();
@@ -928,9 +929,8 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
       String src, long start, long length)
       throws IOException {
     try {
-      LOG.debug("callGetBlockLocations working then will call node.getBlockLocations");
+      LOG.debug("通过动态代理创建的namenode对象调用getBlockLocations方法，会先经过代理的retryInvocationHandler的invoke方法");
       LocatedBlocks blockLocations = namenode.getBlockLocations(src, start, length);
-      LOG.debug("callGetBlockLocations is done");
       return blockLocations;
 
     } catch(RemoteException re) {
@@ -1077,8 +1077,9 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
     checkOpen();
     //    Get block info from namenode
     try (TraceScope ignored = newPathTraceScope("newDFSInputStream", src)) {
+      LOG.debug("DFSClient将请求getLocatedBlocks");
       LocatedBlocks locatedBlocks = getLocatedBlocks(src, 0);
-      LOG.debug("DFSClient getLocatedBlocks complete");
+      LOG.debug("DFSClient.getLocatedBlocks请求完毕");
       return openInternal(locatedBlocks, src, verifyChecksum);
     }
   }

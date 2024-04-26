@@ -177,6 +177,7 @@ public class DistributedFileSystem extends FileSystem
 
   @Override
   public void initialize(URI uri, Configuration conf) throws IOException {
+    LOG.debug("初始化DistributedFileSystem对象前先完成父类的初始化");
     super.initialize(uri, conf);
     setConf(conf);
 
@@ -184,7 +185,7 @@ public class DistributedFileSystem extends FileSystem
     if (host == null) {
       throw new IOException("Incomplete HDFS URI, no host: "+ uri);
     }
-
+    LOG.debug("DistributedFileSystem即将初始化DFSClient");
     initDFSClient(uri, conf);
     this.uri = URI.create(uri.getScheme()+"://"+uri.getAuthority());
     this.workingDir = getHomeDirectory();
@@ -338,7 +339,6 @@ public class DistributedFileSystem extends FileSystem
     return new FileSystemLinkResolver<FSDataInputStream>() {
       @Override
       public FSDataInputStream doCall(final Path p) throws IOException {
-        DFSClient.LOG.info("DistributedFileSyste doCall will working");
         final DFSInputStream dfsis =
             dfs.open(getPathName(p), bufferSize, verifyChecksum);
         try {

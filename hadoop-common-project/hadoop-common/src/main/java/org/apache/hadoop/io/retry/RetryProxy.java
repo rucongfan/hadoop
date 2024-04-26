@@ -59,8 +59,8 @@ public class RetryProxy {
       FailoverProxyProvider<T> proxyProvider, RetryPolicy retryPolicy) {
     return Proxy.newProxyInstance(
         proxyProvider.getInterface().getClassLoader(),
-        new Class<?>[] { iface },
-        new RetryInvocationHandler<T>(proxyProvider, retryPolicy)
+        new Class<?>[] { iface }, //  ClientProtocol.class
+        new RetryInvocationHandler<T>(proxyProvider, retryPolicy) // 通过动态代理新增retry方法
         );
   }
   
@@ -101,10 +101,11 @@ public class RetryProxy {
       FailoverProxyProvider<T> proxyProvider,
       Map<String, RetryPolicy> methodNameToPolicyMap,
       RetryPolicy defaultPolicy) {
+    //通过动态代理创建RetryProxy
     return Proxy.newProxyInstance(
-        proxyProvider.getInterface().getClassLoader(),
-        new Class<?>[] { iface },
-        new RetryInvocationHandler<T>(proxyProvider, defaultPolicy,
+        proxyProvider.getInterface().getClassLoader(),  // 1.类加载器
+        new Class<?>[] { iface },                       // 2.代理接口，代理与被代理对象都需要实现该方法
+        new RetryInvocationHandler<T>(proxyProvider, defaultPolicy,  // 3.指定代理对象，这里实现具体的代理方法，在代理执行方法前会先执行invoke方法
             methodNameToPolicyMap)
         );
   }

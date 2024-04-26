@@ -132,6 +132,7 @@ public class NameNodeProxiesClient {
     if (failoverProxyProvider == null) {
       InetSocketAddress nnAddr = DFSUtilClient.getNNAddress(nameNodeUri);
       Text dtService = SecurityUtil.buildTokenService(nnAddr);
+      // 执行完该方法进行了checkState操作
       ClientProtocol proxy = createNonHAProxyWithClientProtocol(nnAddr, conf,
           UserGroupInformation.getCurrentUser(), true, fallbackToSimpleAuth);
       return new ProxyAndInfo<>(proxy, dtService, nnAddr);
@@ -375,9 +376,11 @@ public class NameNodeProxiesClient {
         fallbackToSimpleAuth, alignmentContext).getProxy();
 
     if (withRetries) { // create the proxy with retries
+      LOG.debug("NameNodeProxiesClient创建retries的代理");
       Map<String, RetryPolicy> methodNameToPolicyMap = new HashMap<>();
       ClientProtocol translatorProxy =
           new ClientNamenodeProtocolTranslatorPB(proxy);
+      // 通过动态代理创建代理对象
       return (ClientProtocol) RetryProxy.create(
           ClientProtocol.class,
           new DefaultFailoverProxyProvider<>(ClientProtocol.class,

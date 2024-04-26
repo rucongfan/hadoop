@@ -3605,7 +3605,9 @@ public abstract class FileSystem extends Configured
       Class<? extends FileSystem> clazz =
           getFileSystemClass(uri.getScheme(), conf);
       FileSystem fs = ReflectionUtils.newInstance(clazz, conf);
+      LOG.debug("FileSystem通过反射创建{}文件系统操作对象，成功",clazz);
       try {
+        LOG.debug("即将进行文件系统操作对象的初始化.uri:{}", uri);
         fs.initialize(uri, conf);
       } catch (IOException | RuntimeException e) {
         // exception raised during initialization.
